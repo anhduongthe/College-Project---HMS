@@ -1,2 +1,87 @@
 # College-Project---HMS
 Hospital Management System
+CREATE TABLE BenhNhan (
+    MaBenhNhan VARCHAR(10) PRIMARY KEY,       -- Mã bệnh nhân, định danh duy nhất cho mỗi bệnh nhân
+    TenBenhNhan NVARCHAR(50) NOT NULL,        -- Tên bệnh nhân
+    SDT VARCHAR(15) NOT NULL,                 -- Số điện thoại
+    DiaChi NVARCHAR(100),                     -- Địa chỉ nơi ở của bệnh nhân
+    NgaySinh DATE,                            -- Ngày sinh của bệnh nhân
+    CCCD VARCHAR(12) UNIQUE,                  -- Số Căn cước công dân (12 ký tự và duy nhất)
+    BHYT VARCHAR(20)                          -- Mã bảo hiểm y tế (có thể null nếu không có)
+);
+CREATE TABLE NhanVien (
+    MaNhanVien VARCHAR(10) PRIMARY KEY,     -- Mã nhân viên, định danh duy nhất
+    TenNhanVien NVARCHAR(50) NOT NULL,      -- Tên nhân viên
+    SDT VARCHAR(15) NOT NULL,               -- Số điện thoại
+    DiaChi NVARCHAR(100),                   -- Địa chỉ
+    NgaySinh DATE,                          -- Ngày sinh của nhân viên
+    ChucVu NVARCHAR(50)                     -- Chức vụ của nhân viên
+);
+CREATE TABLE PhieuDangKyKham (
+    MaPhieuKham VARCHAR(10) PRIMARY KEY,    -- Mã phiếu đăng ký khám, định danh duy nhất
+    MaNhanVien VARCHAR(10),                 -- Mã nhân viên (liên kết đến bảng NhanVien)
+    MaBenhNhan VARCHAR(10),                 -- Mã bệnh nhân (liên kết đến bảng BenhNhan)
+    NgayThang DATE,                         -- Ngày tháng đăng ký khám
+    TrieuChung NVARCHAR(200),               -- Triệu chứng ban đầu của bệnh nhân
+    GhiChu NVARCHAR(200),                   -- Ghi chú thêm
+    FOREIGN KEY (MaNhanVien) REFERENCES NhanVien(MaNhanVien),
+    FOREIGN KEY (MaBenhNhan) REFERENCES BenhNhan(MaBenhNhan)
+);
+CREATE TABLE PhieuXetNghiem (
+    MaPhieuXetNghiem VARCHAR(10) PRIMARY KEY,   -- Mã phiếu xét nghiệm
+    MaBenhNhan VARCHAR(10),                     -- Mã bệnh nhân (liên kết đến bảng BenhNhan)
+    MaNhanVien VARCHAR(10),                     -- Mã nhân viên thực hiện xét nghiệm
+    MaPhieuKham VARCHAR(10),                    -- Mã phiếu đăng ký khám
+    NgayThang DATE,                             -- Ngày tháng thực hiện xét nghiệm
+    YeuCauXetNghiem NVARCHAR(200),              -- Yêu cầu xét nghiệm
+    FOREIGN KEY (MaBenhNhan) REFERENCES BenhNhan(MaBenhNhan),
+    FOREIGN KEY (MaNhanVien) REFERENCES NhanVien(MaNhanVien),
+    FOREIGN KEY (MaPhieuKham) REFERENCES PhieuDangKyKham(MaPhieuKham)
+);
+CREATE TABLE PhieuKetQuaKham (
+    MaPhieuKham VARCHAR(10),                      -- Mã phiếu khám (liên kết đến bảng PhieuDangKyKham)
+    MaBenhNhan VARCHAR(10),                       -- Mã bệnh nhân
+    NgayTaiKham DATE,                             -- Ngày tái khám
+    ChanDoan NVARCHAR(200),                       -- Chẩn đoán bệnh
+    KetQua NVARCHAR(200),                         -- Kết quả khám bệnh
+    TuVanXuLy NVARCHAR(200),                      -- Tư vấn xử lý sau khám
+    NgayTraKetQua DATE,                           -- Ngày trả kết quả khám
+    PRIMARY KEY (MaPhieuKham),
+    FOREIGN KEY (MaPhieuKham) REFERENCES PhieuDangKyKham(MaPhieuKham),
+    FOREIGN KEY (MaBenhNhan) REFERENCES BenhNhan(MaBenhNhan)
+);
+CREATE TABLE DonThuoc (
+    MaDonThuoc VARCHAR(10) PRIMARY KEY,       -- Mã đơn thuốc, định danh duy nhất cho đơn thuốc
+    MaBenhNhan VARCHAR(10),                   -- Mã bệnh nhân
+    MaPhieuKham VARCHAR(10),                  -- Mã phiếu khám
+    NgayLap DATE,                             -- Ngày lập đơn thuốc
+    FOREIGN KEY (MaBenhNhan) REFERENCES BenhNhan(MaBenhNhan),
+    FOREIGN KEY (MaPhieuKham) REFERENCES PhieuDangKyKham(MaPhieuKham)
+);
+CREATE TABLE ChiTietDonThuoc (
+    MaDonThuoc VARCHAR(10),                   -- Mã đơn thuốc (liên kết đến bảng DonThuoc)
+    TenThuoc NVARCHAR(100),                   -- Tên thuốc
+    SoLuong INT,                              -- Số lượng thuốc
+    LieuLuong NVARCHAR(50),                   -- Liều lượng thuốc
+    HuongDanSuDung NVARCHAR(200),             -- Hướng dẫn sử dụng thuốc
+    PRIMARY KEY (MaDonThuoc, TenThuoc),
+    FOREIGN KEY (MaDonThuoc) REFERENCES DonThuoc(MaDonThuoc)
+);
+CREATE TABLE HoaDon (
+    MaHoaDon VARCHAR(10) PRIMARY KEY,         -- Mã hóa đơn, định danh duy nhất
+    MaBenhNhan VARCHAR(10),                   -- Mã bệnh nhân
+    NgayLap DATE,                             -- Ngày lập hóa đơn
+    PhuongThucThanhToan NVARCHAR(50),         -- Phương thức thanh toán (ví dụ: tiền mặt, thẻ, chuyển khoản)
+    FOREIGN KEY (MaBenhNhan) REFERENCES BenhNhan(MaBenhNhan)
+);
+CREATE TABLE KetQuaXetNghiem (
+    MaPhieuXetNghiem VARCHAR(10),             -- Mã phiếu xét nghiệm
+    KetQua NVARCHAR(200),                     -- Kết quả của xét nghiệm
+    GiaTriThamChieu NVARCHAR(100),            -- Giá trị tham chiếu của xét nghiệm
+    DonVi NVARCHAR(50),                       -- Đơn vị đo lường
+    ChanDoan NVARCHAR(200),                   -- Chẩn đoán từ kết quả xét nghiệm
+    ThoiGianNhanMau DATE,                     -- Thời gian nhận mẫu
+    ThoiGianLayMau DATE,                      -- Thời gian lấy mẫu
+    PRIMARY KEY (MaPhieuXetNghiem),
+    FOREIGN KEY (MaPhieuXetNghiem) REFERENCES PhieuXetNghiem(MaPhieuXetNghiem)
+);
