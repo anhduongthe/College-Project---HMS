@@ -1,3 +1,1 @@
-# College-Project---HMS
-Hospital Management System
-
+# Khám chữa bệnh
